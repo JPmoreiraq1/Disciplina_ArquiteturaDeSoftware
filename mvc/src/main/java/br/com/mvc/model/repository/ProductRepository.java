@@ -1,7 +1,11 @@
 package br.com.mvc.model.repository;
 
-import org.springframework.data.jpa.repository.aot.JpaRepositoryContributor;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import br.com.mvc.model.entity.Product;
 
-public class ProductRepository extends JpaRepository{
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
     
 }
+

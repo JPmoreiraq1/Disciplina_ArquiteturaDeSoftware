@@ -1,5 +1,9 @@
 package br.com.mvc.model.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import br.com.mvc.model.entity.Product;
 import br.com.mvc.model.repository.ProductRepository;
 
@@ -16,4 +20,9 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    public List<Product> findAll() {
+        return productRepository.findAll();
+    }
+
 }
+
