@@ -6,6 +6,5 @@ import br.com.mvc.model.entity.Product;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    
-}
 
+}
