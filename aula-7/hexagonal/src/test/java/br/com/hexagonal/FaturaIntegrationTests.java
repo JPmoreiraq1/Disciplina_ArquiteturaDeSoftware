@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -11,17 +15,24 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.hexagonal.domain.entities.Fatura;
 import br.com.hexagonal.domain.ports.in.FaturaUseCase;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 @Transactional
 class FaturaIntegrationTests {
 
     @Autowired
     private FaturaUseCase faturaUseCase;
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
     void deveFaturarPedidoEmitindoBoletoNotaFiscalEEmail() {
@@ -45,5 +56,27 @@ class FaturaIntegrationTests {
         // RF04: Hash do e-mail guardado
         assertNotNull(fatura.getHashEmail());
         assertEquals(64, fatura.getHashEmail().length());
+    }
+
+    @Test
+    void deveReceberPedidoViaRestEDevolverIdDaFatura() throws Exception {
+        String responseJson = mockMvc.perform(post("/api/faturas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"pedidoId\": 99, \"valor\": 350.50}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.faturaId").isNotEmpty())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String faturaId = responseJson.replaceAll(".*\"faturaId\"\\s*:\\s*\"([^\"]+)\".*", "$1");
+
+        mockMvc.perform(get("/api/faturas/{id}", faturaId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(faturaId))
+                .andExpect(jsonPath("$.pedidoId").value(99))
+                .andExpect(jsonPath("$.codigoBarras").isNotEmpty())
+                .andExpect(jsonPath("$.chaveAcesso").isNotEmpty())
+                .andExpect(jsonPath("$.hashEmail").isNotEmpty());
     }
 }
