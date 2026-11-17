@@ -1,0 +1,18 @@
+flowchart TD
+    Inicio([Início - Solicitar Saída de Estoque]) --> Informar[Informar Produto e Quantidade]
+    Informar --> ValidarQtd{Quantidade > 0?}
+    ValidarQtd -- Não --> ErroQtd[Exibir erro: Quantidade inválida] --> Fim([Fim])
+    ValidarQtd -- Sim --> BuscarProd[Buscar Produto no Repositório]
+    BuscarProd --> CheckDescontinuado{Status == DESCONTINUADO?}
+    CheckDescontinuado -- Sim --> ErroDesc[Bloquear saída: Produto descontinuado] --> Fim
+    CheckDescontinuado -- Não --> CheckDisponivel{Status == INDISPONIVEL ou Saldo <= 0?}
+    CheckDisponivel -- Sim --> ErroIndisp[Bloquear saída: Sem estoque disponível] --> Fim
+    CheckDisponivel -- Não --> CheckSaldo{Saldo >= Quantidade?}
+    CheckSaldo -- Não --> ErroSaldo[Bloquear saída: Saldo insuficiente] --> Fim
+    CheckSaldo -- Sim --> Subtrair[Subtrair quantidade do estoque]
+    Subtrair --> CheckZero{Novo saldo == 0?}
+    CheckZero -- Sim --> SetIndisp[Alterar status para INDISPONIVEL]
+    CheckZero -- Não --> ManterDisp[Manter status DISPONIVEL]
+    SetIndisp --> Salvar[Salvar Produto e Registrar Movimentação SAIDA]
+    ManterDisp --> Salvar
+    Salvar --> Sucesso[Exibir mensagem de sucesso] --> Fim

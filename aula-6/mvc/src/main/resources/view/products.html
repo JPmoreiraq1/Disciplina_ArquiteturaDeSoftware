@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <title>Produtos</title>
+</head>
+<body>
+
+    <header>
+        <h1>Gerenciamento de Produtos</h1>
+        <nav>
+            <a th:href="@{/}">Voltar para Início</a> |
+            <a th:href="@{/stock}">Ir para Estoque</a>
+        </nav>
+    </header>
+
+    <main>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <section>
+            <h2>Cadastrar Produto</h2>
+            <form th:action="@{/products}" th:object="${product}" method="post">
+                <div>
+                    <label for="name">Nome:</label>
+                    <input type="text" id="name" th:field="*{name}" required>
+                </div>
+                <div>
+                    <label for="price">Preço:</label>
+                    <input type="number" id="price" step="0.01" th:field="*{price}" required>
+                </div>
+                <button type="submit">Salvar</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Lista de Produtos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Preço</th>
+                        <th>Status</th>
+                        <th>Estoque</th>
+                        <th>Ações (ADM)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="prod : ${products}">
+                        <td th:text="${prod.id}"></td>
+                        <td th:text="${prod.name}"></td>
+                        <td th:text="${prod.price}"></td>
+                        <td th:text="${prod.status}"></td>
+                        <td th:text="${prod.stockQuantity}"></td>
+                        <td>
+                            <form th:if="${prod.status.name() != 'DESCONTINUADO'}"
+                                  th:action="@{/products/{id}/discontinue(id=${prod.id})}"
+                                  method="post"
+                                  class="inline-form">
+                                <select name="role" aria-label="Perfil">
+                                    <option value="ADM">ADM</option>
+                                    <option value="OPERADOR">OPERADOR</option>
+                                </select>
+                                <button type="submit">Descontinuar</button>
+                            </form>
+                            <span th:if="${prod.status.name() == 'DESCONTINUADO'}">Descontinuado</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        Projeto de compreensão do MVC
+    </footer>
+
+</body>
+</html>

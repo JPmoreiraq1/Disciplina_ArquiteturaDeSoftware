@@ -1,0 +1,52 @@
+sequenceDiagram
+    autonumber
+    actor Usuario as Usuário
+    participant View as View (stock.html)
+    participant Controller as StockController
+    participant Service as StockService
+    participant ProdRepo as ProductRepository
+    participant MovRepo as StockMovementRepository
+
+    rect rgb(230, 245, 255)
+        Note over Usuario,MovRepo: Rotina de Entrada de Estoque
+        Usuario->>View: Preenche produto e quantidade (Entrada)
+        View->>Controller: POST /stock/entry (productId, quantity)
+        Controller->>Service: registerEntry(productId, quantity)
+        Service->>ProdRepo: findById(productId)
+        ProdRepo-->>Service: Product
+        alt Produto DESCONTINUADO ou quantidade <= 0
+            Service-->>Controller: IllegalStateException / IllegalArgumentException
+            Controller-->>View: Redirect com errorMessage
+        else Produto válido
+            Service->>Service: Soma quantidade ao saldo
+            opt Saldo saiu de zero (novoSaldo > 0)
+                Service->>Service: status = DISPONIVEL
+            end
+            Service->>ProdRepo: save(product)
+            Service->>MovRepo: save(StockMovement ENTRADA)
+            Service-->>Controller: StockMovement
+            Controller-->>View: Redirect com successMessage
+        end
+    end
+
+    rect rgb(255, 240, 230)
+        Note over Usuario,MovRepo: Rotina de Saída de Estoque
+        Usuario->>View: Preenche produto e quantidade (Saída)
+        View->>Controller: POST /stock/exit (productId, quantity)
+        Controller->>Service: registerExit(productId, quantity)
+        Service->>ProdRepo: findById(productId)
+        ProdRepo-->>Service: Product
+        alt Produto DESCONTINUADO, INDISPONIVEL ou saldo insuficiente
+            Service-->>Controller: IllegalStateException
+            Controller-->>View: Redirect com errorMessage
+        else Saldo suficiente
+            Service->>Service: Subtrai quantidade do saldo
+            opt Saldo zerou (novoSaldo == 0)
+                Service->>Service: status = INDISPONIVEL
+            end
+            Service->>ProdRepo: save(product)
+            Service->>MovRepo: save(StockMovement SAIDA)
+            Service-->>Controller: StockMovement
+            Controller-->>View: Redirect com successMessage
+        end
+    end

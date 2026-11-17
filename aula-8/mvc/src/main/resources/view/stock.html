@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <title>Estoque</title>
+</head>
+<body>
+
+    <header>
+        <h1>Gerenciamento de Estoque</h1>
+        <nav>
+            <a th:href="@{/}">Voltar para Início</a> |
+            <a th:href="@{/products}">Ir para Produtos</a>
+        </nav>
+    </header>
+
+    <main>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <section>
+            <h2>Entrada de Estoque</h2>
+            <form th:action="@{/stock/entry}" method="post">
+                <div>
+                    <label for="entryProductId">Produto:</label>
+                    <select id="entryProductId" name="productId" required>
+                        <option value="" disabled selected>Selecione um produto</option>
+                        <option th:each="prod : ${products}"
+                                th:value="${prod.id}"
+                                th:text="${prod.name + ' (' + prod.status + ' - Qtd: ' + prod.stockQuantity + ')'}">
+                        </option>
+                    </select>
+                </div>
+                <div>
+                    <label for="entryQuantity">Quantidade:</label>
+                    <input type="number" id="entryQuantity" name="quantity" min="1" required>
+                </div>
+                <button type="submit">Registrar Entrada</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Saída de Estoque</h2>
+            <form th:action="@{/stock/exit}" method="post">
+                <div>
+                    <label for="exitProductId">Produto:</label>
+                    <select id="exitProductId" name="productId" required>
+                        <option value="" disabled selected>Selecione um produto</option>
+                        <option th:each="prod : ${products}"
+                                th:value="${prod.id}"
+                                th:text="${prod.name + ' (' + prod.status + ' - Qtd: ' + prod.stockQuantity + ')'}">
+                        </option>
+                    </select>
+                </div>
+                <div>
+                    <label for="exitQuantity">Quantidade:</label>
+                    <input type="number" id="exitQuantity" name="quantity" min="1" required>
+                </div>
+                <button type="submit">Registrar Saída</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Posição Atual do Estoque</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Produto</th>
+                        <th>Status</th>
+                        <th>Quantidade em Estoque</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="prod : ${products}">
+                        <td th:text="${prod.id}"></td>
+                        <td th:text="${prod.name}"></td>
+                        <td th:text="${prod.status}"></td>
+                        <td th:text="${prod.stockQuantity}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Histórico de Movimentações</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Produto</th>
+                        <th>Tipo</th>
+                        <th>Quantidade</th>
+                        <th>Saldo Após</th>
+                        <th>Data/Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="mov : ${movements}">
+                        <td th:text="${mov.id}"></td>
+                        <td th:text="${mov.product.name}"></td>
+                        <td th:text="${mov.type}"></td>
+                        <td th:text="${mov.quantity}"></td>
+                        <td th:text="${mov.balanceAfter}"></td>
+                        <td th:text="${#temporals.format(mov.occurredAt, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        Projeto de compreensão do MVC
+    </footer>
+
+</body>
+</html>
